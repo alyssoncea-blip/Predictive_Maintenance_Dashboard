@@ -32,4 +32,4 @@ logs/
 *.log
 
 # Data (keep only if needed for demo, but typically not in repo)
-data/
+*.csv
