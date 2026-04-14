@@ -115,8 +115,7 @@ Predictive_Maintenance_Dashboard/
 │   ├── style.css          # Custom styling
 │   └── Predictive_Maintenance_Dashboard.png  # Dashboard preview
 ├── requirements.txt       # Python dependencies
-├── README.md              # This file
-└── AGENTS.md              # Development guidelines and instructions
+└── README.md              # This file
 ```
 
 ## Key Implementation Details
