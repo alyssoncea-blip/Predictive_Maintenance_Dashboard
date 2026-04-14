@@ -1,0 +1,250 @@
+
+<style>
+* { box-sizing: border-box; }
+.db { background: var(--color-background-tertiary); border-radius: var(--border-radius-lg); padding: 12px; font-size: 12px; }
+.db-header { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.db-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.db-filters { display: flex; gap: 6px; }
+.filter-pill { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--color-text-secondary); cursor: pointer; transition: background 0.15s; }
+.filter-pill.active { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.filter-pill:hover { background: var(--color-background-secondary); }
+.kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+.kpi { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; cursor: pointer; transition: border-color 0.15s; }
+.kpi:hover { border-color: var(--color-border-secondary); }
+.kpi.selected { border-color: var(--color-border-info); border-width: 1.5px; }
+.kpi-label { font-size: 11px; color: var(--color-text-secondary); margin: 0 0 4px; }
+.kpi-val { font-size: 20px; font-weight: 500; margin: 0 0 2px; }
+.kpi-delta { font-size: 11px; }
+.kpi-val.red { color: #E24B4A; }
+.kpi-val.amber { color: #BA7517; }
+.kpi-val.green { color: #3B6D11; }
+.kpi-val.blue { color: #185FA5; }
+.delta-up { color: #E24B4A; }
+.delta-ok { color: #3B6D11; }
+.main-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 10px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.card-title { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px; }
+.bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-label { font-size: 11px; color: var(--color-text-secondary); width: 30px; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+.bar-pct { font-size: 11px; color: var(--color-text-secondary); width: 32px; }
+.scatter-dot { transition: r 0.2s; cursor: pointer; }
+.scatter-dot:hover { r: 5; }
+.legend-row { display: flex; gap: 12px; margin-top: 8px; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-text-secondary); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sensor-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.sensor-row:last-child { border-bottom: none; }
+.sensor-name { font-size: 11px; color: var(--color-text-primary); font-weight: 500; }
+.sensor-bar-wrap { flex: 1; margin: 0 8px; height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
+.sensor-bar-fill { height: 100%; border-radius: 3px; }
+.sensor-val { font-size: 11px; color: var(--color-text-secondary); width: 36px; text-align: right; }
+.alert-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; }
+.alert-row:last-child { border-bottom: none; }
+.alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.alert-text { font-size: 11px; color: var(--color-text-primary); flex: 1; }
+.alert-time { font-size: 10px; color: var(--color-text-tertiary); }
+.badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; }
+.badge-h { background: #FCEBEB; color: #A32D2D; }
+.badge-m { background: #FAEEDA; color: #854F0B; }
+.tab-row { display: flex; gap: 4px; margin-bottom: 8px; }
+.tab { font-size: 11px; padding: 3px 8px; border-radius: 4px; cursor: pointer; color: var(--color-text-secondary); border: 0.5px solid transparent; }
+.tab.active { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.anno { font-size: 10px; color: var(--color-text-tertiary); margin-top: 6px; }
+</style>
+
+<h2 class="sr-only">Protótipo visual do dashboard de manutenção preditiva AI4I 2020</h2>
+
+<div class="db">
+  <div class="db-header">
+    <span class="db-title">Predictive Maintenance Dashboard — AI4I 2020</span>
+    <div class="db-filters">
+      <span class="filter-pill active" onclick="setFilter(this,'Todos')">Todos</span>
+      <span class="filter-pill" onclick="setFilter(this,'L')">Tipo L</span>
+      <span class="filter-pill" onclick="setFilter(this,'M')">Tipo M</span>
+      <span class="filter-pill" onclick="setFilter(this,'H')">Tipo H</span>
+      <span class="filter-pill" onclick="setFilter(this,'Falhas')">Só falhas</span>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi selected" onclick="selectKpi(this)">
+      <p class="kpi-label">Taxa de falha geral</p>
+      <p class="kpi-val red">3.4%</p>
+      <p class="kpi-delta delta-up">339 de 10.000 máquinas</p>
+    </div>
+    <div class="kpi" onclick="selectKpi(this)">
+      <p class="kpi-label">Desgaste médio (falha)</p>
+      <p class="kpi-val amber">203 min</p>
+      <p class="kpi-delta" style="color:var(--color-text-tertiary)">limiar crítico estimado</p>
+    </div>
+    <div class="kpi" onclick="selectKpi(this)">
+      <p class="kpi-label">Modo de falha principal</p>
+      <p class="kpi-val blue">HDF</p>
+      <p class="kpi-delta" style="color:var(--color-text-tertiary)">Heat Dissipation · 38%</p>
+    </div>
+    <div class="kpi" onclick="selectKpi(this)">
+      <p class="kpi-label">Score de risco médio (ML)</p>
+      <p class="kpi-val green">0.12</p>
+      <p class="kpi-delta delta-ok">Frota em nível seguro</p>
+    </div>
+  </div>
+
+  <div class="main-row">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span class="card-title">Dispersão Torque × Velocidade</span>
+        <div class="tab-row" style="margin:0">
+          <span class="tab active" onclick="setTab(this,'scatter')">Scatter</span>
+          <span class="tab" onclick="setTab(this,'heatmap')">Heatmap</span>
+        </div>
+      </div>
+      <svg width="100%" viewBox="0 0 340 160" style="display:block;">
+        <line x1="30" y1="10" x2="30" y2="140" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+        <line x1="30" y1="140" x2="330" y2="140" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+        <text x="14" y="80" font-size="9" fill="var(--color-text-tertiary)" text-anchor="middle" transform="rotate(-90,14,80)">Torque (Nm)</text>
+        <text x="180" y="155" font-size="9" fill="var(--color-text-tertiary)" text-anchor="middle">Rotational speed (RPM)</text>
+        <circle class="scatter-dot" cx="60" cy="80" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="80" cy="60" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="100" cy="90" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="120" cy="70" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="140" cy="100" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="160" cy="55" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="180" cy="85" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="200" cy="65" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="220" cy="95" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="240" cy="75" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="260" cy="85" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="280" cy="60" r="3" fill="#B5D4F4" opacity="0.7"/>
+        <circle class="scatter-dot" cx="55" cy="30" r="4" fill="#E24B4A" opacity="0.9"/>
+        <circle class="scatter-dot" cx="300" cy="25" r="4" fill="#E24B4A" opacity="0.9"/>
+        <circle class="scatter-dot" cx="310" cy="130" r="4" fill="#E24B4A" opacity="0.9"/>
+        <circle class="scatter-dot" cx="65" cy="130" r="4" fill="#E24B4A" opacity="0.9"/>
+        <circle class="scatter-dot" cx="290" cy="40" r="4" fill="#EF9F27" opacity="0.9"/>
+        <circle class="scatter-dot" cx="70" cy="120" r="4" fill="#EF9F27" opacity="0.9"/>
+        <rect x="32" y="12" width="116" height="25" fill="none" stroke="#EF9F27" stroke-width="0.8" stroke-dasharray="3 2" rx="2"/>
+        <text x="38" y="23" font-size="8" fill="#BA7517">zona crítica</text>
+        <text x="38" y="32" font-size="8" fill="#BA7517">baixa vel. + alto torque</text>
+        <rect x="250" y="12" width="75" height="25" fill="none" stroke="#E24B4A" stroke-width="0.8" stroke-dasharray="3 2" rx="2"/>
+        <text x="256" y="23" font-size="8" fill="#A32D2D">zona crítica</text>
+        <text x="256" y="32" font-size="8" fill="#A32D2D">alta vel. + alto torque</text>
+      </svg>
+      <div class="legend-row">
+        <div class="legend-item"><div class="legend-dot" style="background:#B5D4F4"></div>Normal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EF9F27"></div>Risco moderado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>Falha</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Modos de falha (%)</p>
+      <div class="bar-row"><span class="bar-label">HDF</span><div class="bar-track"><div class="bar-fill" style="width:76%;background:#E24B4A"></div></div><span class="bar-pct">38%</span></div>
+      <div class="bar-row"><span class="bar-label">PWF</span><div class="bar-track"><div class="bar-fill" style="width:56%;background:#EF9F27"></div></div><span class="bar-pct">28%</span></div>
+      <div class="bar-row"><span class="bar-label">OSF</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:#BA7517"></div></div><span class="bar-pct">15%</span></div>
+      <div class="bar-row"><span class="bar-label">TWF</span><div class="bar-track"><div class="bar-fill" style="width:22%;background:#378ADD"></div></div><span class="bar-pct">11%</span></div>
+      <div class="bar-row"><span class="bar-label">RNF</span><div class="bar-track"><div class="bar-fill" style="width:16%;background:#B4B2A9"></div></div><span class="bar-pct">8%</span></div>
+      <p class="anno">HDF = Heat Dissipation · PWF = Power · OSF = Overstrain · TWF = Tool Wear · RNF = Random</p>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="card">
+      <p class="card-title">Sensores em tempo real</p>
+      <div class="sensor-row">
+        <span class="sensor-name">Air temp</span>
+        <div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:62%;background:#378ADD"></div></div>
+        <span class="sensor-val">300.1K</span>
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-name">Process temp</span>
+        <div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:71%;background:#EF9F27"></div></div>
+        <span class="sensor-val">310.4K</span>
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-name">Rot. speed</span>
+        <div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:48%;background:#378ADD"></div></div>
+        <span class="sensor-val">1495 rpm</span>
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-name">Torque</span>
+        <div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:55%;background:#EF9F27"></div></div>
+        <span class="sensor-val">39.8 Nm</span>
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-name">Tool wear</span>
+        <div class="sensor-bar-wrap"><div class="sensor-bar-fill" style="width:83%;background:#E24B4A"></div></div>
+        <span class="sensor-val">198 min</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Falha por tipo de produto</p>
+      <svg width="100%" viewBox="0 0 200 120" style="display:block;">
+        <text x="34" y="108" font-size="10" fill="var(--color-text-secondary)" text-anchor="middle">L</text>
+        <text x="100" y="108" font-size="10" fill="var(--color-text-secondary)" text-anchor="middle">M</text>
+        <text x="166" y="108" font-size="10" fill="var(--color-text-secondary)" text-anchor="middle">H</text>
+        <rect x="18" y="10" width="32" height="90" rx="3" fill="var(--color-background-secondary)"/>
+        <rect x="18" y="64" width="32" height="36" rx="3" fill="#E24B4A" opacity="0.85"/>
+        <text x="34" y="56" font-size="9" fill="var(--color-text-secondary)" text-anchor="middle">5.9%</text>
+        <rect x="84" y="10" width="32" height="90" rx="3" fill="var(--color-background-secondary)"/>
+        <rect x="84" y="74" width="32" height="26" rx="3" fill="#EF9F27" opacity="0.9"/>
+        <text x="100" y="66" font-size="9" fill="var(--color-text-secondary)" text-anchor="middle">3.0%</text>
+        <rect x="150" y="10" width="32" height="90" rx="3" fill="var(--color-background-secondary)"/>
+        <rect x="150" y="84" width="32" height="16" rx="3" fill="#639922" opacity="0.9"/>
+        <text x="166" y="76" font-size="9" fill="var(--color-text-secondary)" text-anchor="middle">1.7%</text>
+        <line x1="10" y1="10" x2="10" y2="100" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+        <line x1="10" y1="100" x2="190" y2="100" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+      </svg>
+      <p class="anno">Tipo L (baixa qualidade) apresenta maior taxa de falha</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="card-title">Alertas recentes</span>
+        <span style="font-size:10px;color:var(--color-text-tertiary)">últimos 50 ciclos</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-dot" style="background:#E24B4A"></div>
+        <span class="alert-text">M-L-0372 · Tool wear crítico</span>
+        <span class="badge badge-h">HIGH</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-dot" style="background:#E24B4A"></div>
+        <span class="alert-text">H-M-1145 · Temp. diferencial alta</span>
+        <span class="badge badge-h">HIGH</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-dot" style="background:#EF9F27"></div>
+        <span class="alert-text">L-M-0891 · Potência fora do range</span>
+        <span class="badge badge-m">MED</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-dot" style="background:#EF9F27"></div>
+        <span class="alert-text">M-H-0234 · Score ML &gt; 0.7</span>
+        <span class="badge badge-m">MED</span>
+      </div>
+      <div class="alert-row">
+        <div class="alert-dot" style="background:#B4B2A9"></div>
+        <span class="alert-text">L-L-0057 · Verificação agendada</span>
+        <span style="font-size:10px;color:var(--color-text-tertiary)">LOW</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setFilter(el, val) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectKpi(el) {
+  document.querySelectorAll('.kpi').forEach(k => k.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function setTab(el, view) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
